@@ -1,7 +1,6 @@
 FROM ubuntu:16.04
 
 LABEL maintainer="cherry.ardillos@zeald.com"
-LABEL description="Magento 2.2.4"
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -43,18 +42,17 @@ RUN a2ensite site.conf
 
 CMD ["apache2ctl", "-D", "FOREGROUND"]
 
-ENV MAGENTO_VERSION 2.2.4
 ENV COMPOSER_HOME /var/www/.composer/
+
+RUN chsh -s /bin/bash www-data
 
 # Composer installation
 RUN curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer
 COPY ./auth.json $COMPOSER_HOME
 
-RUN chsh -s /bin/bash www-data
-
-RUN rm /var/www/html/index.html
-
-RUN a2enmod rewrite
-
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Copy Magento basesitev3 project
+COPY ./httpdocs /var/www/html
+RUN chown -R www-data:www-data /var/www
+RUN cd /var/www/html \
+&& chmod u+x bin/magento 
